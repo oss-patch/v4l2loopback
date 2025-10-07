@@ -2944,14 +2944,17 @@ static int v4l2_loopback_add(struct v4l2_loopback_config *conf, int *ret_nr)
 	return 0;
 
 out_free_device:
-	video_device_release(dev->vdev);
 out_free_handler:
-	v4l2_ctrl_handler_free(&dev->ctrl_handler);
+        v4l2_ctrl_handler_free(&dev->ctrl_handler);
 out_unregister:
-	video_set_drvdata(dev->vdev, NULL);
-	if (vdev_priv != NULL)
-		kfree(vdev_priv);
-	v4l2_device_unregister(&dev->v4l2_dev);
+        if (dev->vdev) {
+                video_set_drvdata(dev->vdev, NULL);
+                if (vdev_priv != NULL)
+                        kfree(vdev_priv);
+                video_device_release(dev->vdev);
+                dev->vdev = NULL;
+        }
+        v4l2_device_unregister(&dev->v4l2_dev);
 out_free_idr:
 	idr_remove(&v4l2loopback_index_idr, nr);
 out_free_dev:
